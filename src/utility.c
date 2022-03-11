@@ -12,7 +12,7 @@
 #define MAX_ARGS 64                            // max # args
 #define SEPARATORS " \t\n"                     // token separators
 
-extern char **environ;
+extern char **environ; // the environment variable array
 
 // need to standardise function input before doing this
 void execute(char *args[], int numargs, int background, void (*pFunction)(char**, int))
@@ -20,10 +20,10 @@ void execute(char *args[], int numargs, int background, void (*pFunction)(char**
     int pid = fork();
     if (pid == 0) // child processing
     {
-        int err = is_io(args, numargs);
+        int err = is_io(args, numargs); // checking for input/output redirection
         if (!err)
         {   
-            if (background)
+            if (background) // checking for background execution
             {
                 setpgid(0, 0);
             }
@@ -36,7 +36,7 @@ void execute(char *args[], int numargs, int background, void (*pFunction)(char**
         perror("fork failed");
         exit(1);
     }
-    else
+    else // parent processing
     {
         if (!background)
         {
@@ -54,7 +54,7 @@ int is_io(char* args[], int numargs)
     {
         if (!strcmp(args[i], "<")) // checking for file input
         {
-            args[i] = NULL;
+            args[i] = NULL; // remove "<" from args so it does not get passed as argument to function later
             i++;
             if (args[i] && access(args[i], F_OK & R_OK) == 0) // if there is an argument after <, and that file exists
             {
@@ -101,7 +101,7 @@ int is_io(char* args[], int numargs)
             }
         }
 
-        if (!strcmp(args[i], ">"))
+        if (!strcmp(args[i], ">")) // checking for output redirection
         {
             args[i] = NULL;
             i++;
@@ -109,7 +109,7 @@ int is_io(char* args[], int numargs)
             {
                 int out;
                 out = creat(args[i], 0644);
-                dup2(out, STDOUT_FILENO);
+                dup2(out, STDOUT_FILENO); // duplicate the stdout to new "out" file
                 args[i] = NULL;
                 continue;
             }
@@ -119,7 +119,7 @@ int is_io(char* args[], int numargs)
             }
         }
 
-        if (!strcmp(args[i], ">>"))
+        if (!strcmp(args[i], ">>")) // checking for output redirection with append
         {
             args[i] = NULL;
             i++;
@@ -162,9 +162,7 @@ void cd(char *args[], int numargs)
     char *current_dir;
     char *target_dir;
     char cd_buf[200];
-    int stdout_og = dup(1);
-    int stdin_og = dup(0);
-    int err = is_io(args, numargs);
+    int err = is_io(args, numargs); // checking for I/O redirection
     if (args[1]) // path specified
     {
         char *first = &args[1][0];
@@ -173,7 +171,7 @@ void cd(char *args[], int numargs)
             target_dir = args[1];
         }
         else
-        {
+        { // if path not absolute, generate string from current path + provided path
             current = getcwd(cd_buf, 200); 
             current_dir = strcat(current, "/");
             target_dir = strcat(current, args[1]);
@@ -211,7 +209,7 @@ void printenv(char *args[], int numargs)
 {
     for (int i = 0; environ[i] != NULL; ++i)
     {
-        printf("%s\n", environ[i]);
+        printf("%s\n", environ[i]); // print every environment variable
     }
 }
 
@@ -220,7 +218,7 @@ void echo(char *args[], int numargs)
     if (args[1]) // more than 1 arg
     {
         char **arg = args;
-        *arg++; // startt at the second arg, dont echo "echo"
+        *arg++; // start at the second arg, dont echo "echo"
         while(*arg)
         {
             printf("%s ", *arg);
@@ -238,7 +236,7 @@ void poz(char *args[], int numargs)
 {
     while(1)
     {
-        char c = getchar();
+        char c = getchar(); // waiting for user to input newline character
         if (c == 10)
         {
             break;
@@ -249,10 +247,9 @@ void poz(char *args[], int numargs)
 void help(char *original_dir, char *args[], int numargs)
 {
     char mandir[] = "../manual/";
-    printf("%s\n", mandir);
     int pid = fork();
     if (pid == 0) // child
-    {
+    { // this chunk of code ensures that the help function will execute no matter which directory we are currently in
         if (chdir(original_dir) != 0) //chdir failed
         {
             fprintf(stderr, "An error has occured switching directory\n");
@@ -282,13 +279,13 @@ char **tokenize(char str[])
 {
     char strbuf[200];
     strcpy(strbuf, str);
-    char **tokenbuf = malloc(sizeof(char*) * 20);
+    char **tokenbuf = malloc(sizeof(char*) * 20); // allocating memory for string array
     char *token;
     const char s[] = " \n\t";
     int i = 0;
     // first token
     token = strtok(strbuf, SEPARATORS);
-    while(token != NULL)
+    while(token != NULL) // tokenizing string
     {
         tokenbuf[i] = token;
         token = strtok(NULL, s);
@@ -297,7 +294,7 @@ char **tokenize(char str[])
     return tokenbuf;
 }
 
-int check_bgd(char *args[])
+int check_bgd(char *args[]) // checking for "&" symbol, returns 1 if present, else 0
 {
     char **argcycle = args;
     while (*argcycle != NULL)

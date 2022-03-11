@@ -21,7 +21,7 @@ int main (int argc, char ** argv)
     char * args[MAX_ARGS];                     // pointers to arg strings
     char ** arg;                               // working pointer thru args
     char * prompt = ":> ";                    // shell prompt
-    char *shell;
+    char *shell; // filepath for myshell executable to update SHELL environment variable
     char *current;
     char *current_dir;
     char *target_dir;
@@ -82,7 +82,7 @@ int main (int argc, char ** argv)
                     }
                     *arg++;
                 }
-
+                // checking the first argument to see which inbuilt function to execute
                 if (!strcmp(args[0], "clr"))
                 {
                     pFunction = clr;
@@ -156,7 +156,7 @@ int main (int argc, char ** argv)
                     continue;
                     
                 }
-                arg = args;
+                arg = args; // resettingg the args to be NULL again, ready for more input
                 while (*arg)
                 {
                     *arg++;
