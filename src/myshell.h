@@ -18,7 +18,7 @@ void help(char *original_dir, char *args[], int numargs);
 
 char **tokenize(char *str);
 int check_bgd(char *args[]);
-void execute(char *args[], int numargs, int background, void (*pFunction)(char**, int));
+void execute(char *args[], int numargs, void (*pFunction)(char**, int));
 
 /* I, Przemyslaw Majda, student number 20505049, acknowledge
 the DCU Academic Integrity Policy and that all work is my own */

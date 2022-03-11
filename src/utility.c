@@ -15,7 +15,7 @@
 extern char **environ; // the environment variable array
 
 // need to standardise function input before doing this
-void execute(char *args[], int numargs, int background, void (*pFunction)(char**, int))
+void execute(char *args[], int numargs, void (*pFunction)(char**, int))
 {
     int pid = fork();
     if (pid == 0) // child processing
@@ -23,10 +23,6 @@ void execute(char *args[], int numargs, int background, void (*pFunction)(char**
         int err = is_io(args, numargs); // checking for input/output redirection
         if (!err)
         {   
-            if (background) // checking for background execution
-            {
-                setpgid(0, 0);
-            }
             pFunction(args, numargs);
             exit(0);
         }
@@ -38,11 +34,7 @@ void execute(char *args[], int numargs, int background, void (*pFunction)(char**
     }
     else // parent processing
     {
-        if (!background)
-        {
-            wait(NULL);
-        }
-        
+        wait(NULL);   
     }
 }
 

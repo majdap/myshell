@@ -86,7 +86,7 @@ int main (int argc, char ** argv)
                 if (!strcmp(args[0], "clr"))
                 {
                     pFunction = clr;
-                    execute(args, numargs, background, *pFunction);
+                    execute(args, numargs, *pFunction);
                     continue;
                 }
                 
@@ -99,28 +99,28 @@ int main (int argc, char ** argv)
                 if (!strcmp(args[0], "dir"))
                 {
                     pFunction = dir;
-                    execute(args, numargs, background, *pFunction);
+                    execute(args, numargs, *pFunction);
                     continue;
                 }
 
                 if (!strcmp(args[0], "environ"))
                 {
                     pFunction = printenv;
-                    execute(args, numargs, background, *pFunction);
+                    execute(args, numargs, *pFunction);
                     continue;
                 }
 
                 if (!strcmp(args[0], "echo"))
                 {
                     pFunction = echo;
-                    execute(args, numargs, background, *pFunction);
+                    execute(args, numargs, *pFunction);
                     continue;
                 }
 
                 if (!strcmp(args[0], "pause"))
                 {
                     pFunction = poz;
-                    execute(args, numargs, background, *pFunction);
+                    execute(args, numargs, *pFunction);
                     continue;
                 }
 
@@ -142,15 +142,31 @@ int main (int argc, char ** argv)
                     if(args[0])
                     {
                         int pid = fork();
-                        if (pid == 0)
+                        if (pid == 0) // child processing
                         {
-                            int err = is_io(args, numargs);
-                            execvp(args[0], args);
-                            perror("exec");
-                            exit(1);
+                            if (background)
+                            {
+                                int err = is_io(args, numargs);
+                                if(!err)
+                                {
+                                    execvp(args[0], args);
+                                    perror("exec");
+                                    exit(1);
+                                }
+                                else {
+                                    fprintf(stderr, "error: I/O\n");
+                                    continue;
+                                }
+                                
+                            }
+                            
                         }
-                        else{
-                            wait(NULL);
+                        else{ // parent processing
+                            if (!background)
+                            {
+                                wait(NULL);
+                            }
+
                         }
                     }
                     continue;
