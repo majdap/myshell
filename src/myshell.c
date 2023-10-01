@@ -139,7 +139,7 @@ int main (int argc, char ** argv)
                 // if not inbuilt command:
                 else
                 {
-                    if(args[0])
+                    if (args[0])
                     {
                         int pid = fork();
                         if (pid == 0) // child processing
@@ -147,30 +147,34 @@ int main (int argc, char ** argv)
                             if (background)
                             {
                                 int err = is_io(args, numargs);
-                                if(!err)
+                                if (!err)
                                 {
                                     execvp(args[0], args);
                                     perror("exec");
                                     exit(1);
                                 }
-                                else {
-                                    fprintf(stderr, "error: I/O\n");
-                                    continue;
-                                }
-                                
                             }
-                            
+                            else
+                            {
+                                execvp(args[0], args);
+                                perror("exec");
+                                exit(1);
+                            }
+                            exit(0); // add this line to exit the child process
                         }
-                        else{ // parent processing
+                        else if (pid < 0)
+                        {
+                            perror("fork");
+                            exit(1);
+                        }
+                        else
+                        {
                             if (!background)
                             {
-                                wait(NULL);
+                                waitpid(pid, NULL, 0);
                             }
-
                         }
                     }
-                    continue;
-                    
                 }
                 arg = args; // resettingg the args to be NULL again, ready for more input
                 while (*arg)
